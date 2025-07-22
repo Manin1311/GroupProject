@@ -7,26 +7,26 @@ public class Admin extends User {
     }
 
     @Override
-    public void showMenu() {
-        Scanner sc = new Scanner(System.in);
+    public void showMenu(Scanner sc) {
         int choice = -1;
 
         do {
+            // MODIFIED: "Export Data" removed, other options re-numbered.
             String[] options = {
                     "1. View All Complaints",
                     "2. View All Crime Reports",
                     "3. Generate .txt Report",
                     "4. View Logs",
                     "5. Manage Users",
-                    "6. Export Data",
-                    "7. System Settings",
-                    "8. FAQs",
-                    "9. Logout"
+                    "6. System Settings",
+                    "7. FAQs",
+                    "8. Logout"
             };
+            // MODIFIED: The choice range is now 1-8.
             CLIUtils.printBoxedMenu("Admin Menu", options);
+            choice = CLIUtils.promptInt(sc, "Enter your choice: ", 1, 8);
 
-            choice = CLIUtils.promptInt(sc, "Enter your choice: ", 1, 9);
-
+            // MODIFIED: Switch cases re-numbered.
             switch (choice) {
                 case 1:
                     CLIUtils.printInfo("Showing all complaints...");
@@ -47,25 +47,21 @@ public class Admin extends User {
                 case 5:
                     manageUsers(sc);
                     break;
-                case 6:
-                    exportData(sc);
-                    break;
-                case 7:
-                    // This now opens the new System Settings sub-menu
+                case 6: // Was previously case 7
                     systemSettings(sc);
                     break;
-                case 8:
+                case 7: // Was previously case 8
                     showFAQs();
                     break;
-                case 9:
+                case 8: // Was previously case 9
                     CLIUtils.printInfo("Logged out successfully.");
                     ActionTracker.log("Admin", "Logged out");
                     break;
                 default:
-                    CLIUtils.printError("Invalid choice. Please select 1-9.");
+                    CLIUtils.printError("Invalid choice. Please select 1-8.");
             }
-            if (choice != 9) CLIUtils.waitForEnter();
-        } while (choice != 9);
+            if (choice != 8) CLIUtils.waitForEnter(sc);
+        } while (choice != 8);
     }
 
     private void manageUsers(Scanner sc) {
@@ -90,17 +86,12 @@ public class Admin extends User {
                 case 3:
                     return;
             }
-            if (choice != 3) CLIUtils.waitForEnter();
+            if (choice != 3) CLIUtils.waitForEnter(sc);
         } while(choice != 3);
     }
 
-    private void exportData(Scanner sc) {
-        CLIUtils.printInfo("Generating TXT data export...");
-        ReportGenerator.exportComplaintsToTXT();
-        ActionTracker.log("Admin", "Exported complaints data to TXT");
-    }
+    // REMOVED the exportData(Scanner sc) method.
 
-    // UPDATED: This method is now a sub-menu
     private void systemSettings(Scanner sc) {
         int choice = -1;
         do {
@@ -130,11 +121,10 @@ public class Admin extends User {
                 case 4:
                     return; // Go back
             }
-            if (choice != 4) CLIUtils.waitForEnter();
+            if (choice != 4) CLIUtils.waitForEnter(sc);
         } while(choice != 4);
     }
 
-    // NEW helper method for System Settings
     private void viewSystemPaths() {
         try {
             String path = System.getProperty("user.dir");
