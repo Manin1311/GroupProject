@@ -116,49 +116,8 @@ public class ReportGenerator {
         }
     }
 
-    public static void exportComplaintsToTXT() {
-        Connection con = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-        PrintWriter writer = null;
-        try {
-            con = DBConnection.connect();
-            stmt = con.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM complaints");
+    // REMOVED the exportComplaintsToTXT() method from this file.
 
-            String filename = "complaints_export.txt";
-            writer = new PrintWriter(new FileWriter(filename));
-
-            writer.println("=============================================");
-            writer.println("      All Complaints Data Export");
-            writer.println("=============================================");
-            writer.println("Generated on: " + LocalDate.now() + "\n");
-
-            while(rs.next()) {
-                writer.println("Complaint ID: " + rs.getInt("complaint_id"));
-                writer.println("User ID     : " + rs.getInt("user_id"));
-                writer.println("Area        : " + rs.getString("area"));
-                writer.println("Type        : " + rs.getString("type"));
-                writer.println("Status      : " + rs.getString("status"));
-                writer.println("Officer ID  : " + rs.getInt("officer_id"));
-                writer.println("Filed On    : " + rs.getString("filed_on"));
-                writer.println("Description : " + rs.getString("description"));
-                writer.println("---------------------------------------------");
-            }
-            CLIUtils.printSuccess("✅ Data exported successfully to " + filename);
-        } catch(Exception e) {
-            CLIUtils.printError("Error exporting data to TXT: " + e.getMessage());
-        } finally {
-            try {
-                if (writer != null) writer.close();
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-                if (con != null) con.close();
-            } catch (Exception e) {}
-        }
-    }
-
-    // NEW METHOD for archiving old, resolved complaints
     public static void archiveOldComplaints() {
         Connection con = null;
         PreparedStatement psSelect = null;
@@ -199,7 +158,6 @@ public class ReportGenerator {
                 writer.println("------------------------------------");
             }
 
-            // Now, delete the archived records from the database
             if (!idsToDelete.isEmpty()) {
                 String deleteSql = "DELETE FROM complaints WHERE complaint_id IN (" +
                         idsToDelete.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
