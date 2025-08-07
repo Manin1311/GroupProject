@@ -77,11 +77,11 @@ public class MainApplication {
         try {
             CLIUtils.printInfo("Sign Up - Enter your details:");
 
-            String username = CLIUtils.promptString(sc, "Username", true, 3, 20, ".*[a-zA-Z].*", "Username must contain at least one letter and cannot be purely numeric.");
-            String password = CLIUtils.promptString(sc, "Password", true, 6, 30, ".*[a-zA-Z].*", "Password must contain at least one letter and cannot be purely numeric.");
-            String name = CLIUtils.promptString(sc, "Full Name", true, 2, 40, null, null);
-            String countryCode = CLIUtils.promptString(sc, "Country Code (+91, etc)", true, 2, 5, "^\\+\\d+$", "Country code must start with + and be numeric (e.g., +91). ");
-            String phone = CLIUtils.promptString(sc, "Phone Number (10 digits)", true, 10, 10, "^\\d{10}$", "Phone number must be exactly 10 digits.");
+            String username = CLIUtils.promptString(sc, "Username: ", true, 3, 20, ".*[a-zA-Z].*", "Username must contain at least one letter and cannot be purely numeric.");
+            String password = CLIUtils.promptString(sc, "Password: ", true, 6, 30, ".*[a-zA-Z].*", "Password must contain at least one letter and cannot be purely numeric.");
+            String name = CLIUtils.promptString(sc, "Full Name: ", true, 2, 40, null, null);
+            String countryCode = CLIUtils.promptString(sc, "Country Code (+91, etc): ", true, 2, 5, "^\\+\\d+$", "Country code must start with + and be numeric (e.g., +91). ");
+            String phone = CLIUtils.promptString(sc, "Phone Number (10 digits): ", true, 10, 10, "^\\d{10}$", "Phone number must be exactly 10 digits.");
 
             // OTP Verification
             int otp = 1000 + new java.util.Random().nextInt(9000);
@@ -92,12 +92,12 @@ public class MainApplication {
                 return;
             }
 
-            String state = CLIUtils.promptString(sc, "State", true, 2, 30, null, null);
-            String city = CLIUtils.promptString(sc, "City", true, 2, 30, null, null);
-            String landmark = CLIUtils.promptString(sc, "Landmark", true, 2, 30, null, null);
-            String houseNo = CLIUtils.promptString(sc, "House No", true, 1, 10, null, null);
+            String state = CLIUtils.promptString(sc, "State: ", true, 2, 30, null, null);
+            String city = CLIUtils.promptString(sc, "City: ", true, 2, 30, null, null);
+            String landmark = CLIUtils.promptString(sc, "Landmark: ", true, 2, 30, null, null);
+            String houseNo = CLIUtils.promptString(sc, "House No: ", true, 1, 10, null, null);
             int age = CLIUtils.promptInt(sc, "Age: ", 1, 120);
-            String email = CLIUtils.promptString(sc, "Email", true, 5, 50, "^[A-Za-z0-9+_.-]+@(.+)$", "Please enter a valid email address.");
+            String email = CLIUtils.promptString(sc, "Email: ", true, 5, 50, "^[A-Za-z0-9+_.-]+@(.+)$", "Please enter a valid email address.");
 
             Citizen citizen = UserManager.registerUser(username, password, name, countryCode, phone, state, city, landmark, houseNo, age, email);
             if (citizen == null) {
@@ -112,15 +112,15 @@ public class MainApplication {
 
     private static void loginCitizenFlow(Scanner sc) {
         try {
-            String username = CLIUtils.promptString(sc, "Username", true, 3, 20, ".*[a-zA-Z].*", "Username must contain at least one letter and cannot be purely numeric.");
-            String password = CLIUtils.promptString(sc, "Password", true, 6, 30, ".*[a-zA-Z].*", "Password must contain at least one letter and cannot be purely numeric.");
+            String username = CLIUtils.promptString(sc, "Username: ", true, 3, 20, ".*[a-zA-Z].*", "Username must contain at least one letter and cannot be purely numeric.");
+            String password = CLIUtils.promptString(sc, "Password: ", true, 6, 30, ".*[a-zA-Z].*", "Password must contain at least one letter and cannot be purely numeric.");
 
             Citizen citizen = UserManager.getUser(username, password);
             if (citizen == null) {
                 CLIUtils.printError("Invalid credentials or user not found.");
                 return;
             }
-            citizen.showMenu();
+            citizen.showMenu(sc);
         } catch (Exception e) {
             CLIUtils.printError("Error during login: " + e.getMessage());
         }
@@ -128,12 +128,12 @@ public class MainApplication {
 
     private static void loginOfficerFlow(Scanner sc) {
         try {
-            String username = CLIUtils.promptString(sc, "Officer Username", true, 3, 20, ".*[a-zA-Z].*", "Username must contain at least one letter and cannot be purely numeric.");
-            String password = CLIUtils.promptString(sc, "Officer Password", true, 6, 30, ".*[a-zA-Z].*", "Password must contain at least one letter and cannot be purely numeric.");
+            String username = CLIUtils.promptString(sc, "Officer Username: ", true, 3, 20, ".*[a-zA-Z].*", "Username must contain at least one letter and cannot be purely numeric.");
+            String password = CLIUtils.promptString(sc, "Officer Password: ", true, 6, 30, ".*[a-zA-Z].*", "Password must contain at least one letter and cannot be purely numeric.");
 
             Officer officer = OfficerManager.getOfficer(username, password);
             if (officer != null) {
-                officer.showMenu();
+                officer.showMenu(sc);
             } else {
                 CLIUtils.printError("Invalid officer credentials.");
             }
@@ -144,15 +144,14 @@ public class MainApplication {
 
     private static void loginAdminFlow(Scanner sc) {
         try {
-            String username = CLIUtils.promptString(sc, "Admin Username", true, 3, 20, ".*[a-zA-Z].*", "Username must contain at least one letter.");
-            String password = CLIUtils.promptString(sc, "Admin Password", true, 6, 30, ".*[a-zA-Z].*", "Password must contain at least one letter.");
+            String username = CLIUtils.promptString(sc, "Admin Username: ", true, 3, 20, ".*[a-zA-Z].*", "Username must contain at least one letter.");
+            String password = CLIUtils.promptString(sc, "Admin Password: ", true, 6, 30, ".*[a-zA-Z].*", "Password must contain at least one letter.");
 
-            // Use the new AdminManager to validate against the database
             Admin admin = AdminManager.getAdmin(username, password);
 
             if (admin != null) {
                 CLIUtils.printSuccess("✅ Admin login successful!");
-                admin.showMenu();
+                admin.showMenu(sc);
             } else {
                 CLIUtils.printError("Invalid admin credentials.");
             }
