@@ -60,7 +60,7 @@ public class Admin extends User {
                 default:
                     CLIUtils.printError("Invalid choice. Please select 1-8.");
             }
-            if (choice != 8) CLIUtils.waitForEnter(sc);
+            if (choice != 8) CLIUtils.waitForEnter();
         } while (choice != 8);
     }
 
@@ -86,7 +86,7 @@ public class Admin extends User {
                 case 3:
                     return;
             }
-            if (choice != 3) CLIUtils.waitForEnter(sc);
+            if (choice != 3) CLIUtils.waitForEnter();
         } while(choice != 3);
     }
 
@@ -121,7 +121,7 @@ public class Admin extends User {
                 case 4:
                     return; // Go back
             }
-            if (choice != 4) CLIUtils.waitForEnter(sc);
+            if (choice != 4) CLIUtils.waitForEnter();
         } while(choice != 4);
     }
 
