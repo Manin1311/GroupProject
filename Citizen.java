@@ -9,9 +9,9 @@ public class Citizen extends User {
         super(userId, username, password, name, countryCode, phone, state, city, landmark, houseNo, age, email);
     }
 
-    @Override
-    public void showMenu() {
-        Scanner sc = new Scanner(System.in);
+    // MODIFIED: Method now accepts a Scanner object
+    public void showMenu(Scanner sc) {
+        // REMOVED: The line "Scanner sc = new Scanner(System.in);" is deleted from here.
         int choice = -1;
 
         do {
@@ -51,13 +51,12 @@ public class Citizen extends User {
                     handleOfficerLookup(sc);
                     break;
                 case 6:
-                    CLIUtils.printInfo("Ahmedabad Helpline: 100, 108, 181, 1091");
+                    CLIUtils.printInfo("Ahmedabad Helpline: 155303");
                     break;
                 case 7:
                     handleSnapshotView(sc);
                     break;
                 case 8:
-                    // This case now correctly calls the new updateProfile method
                     updateProfile(sc);
                     break;
                 case 9:
@@ -97,13 +96,13 @@ public class Citizen extends User {
             String newValue = "";
             switch(choice) {
                 case 1:
-                    newValue = CLIUtils.promptString(sc, "Enter new Phone Number (10 digits)", true, 10, 10, "^\\d{10}$", "Phone number must be exactly 10 digits.");
+                    newValue = CLIUtils.promptString(sc, "Enter new Phone Number (10 digits): ", true, 10, 10, "^\\d{10}$", "Phone number must be exactly 10 digits.");
                     break;
                 case 2:
-                    newValue = CLIUtils.promptString(sc, "Enter new Email Address", true, 5, 50, "^[A-Za-z0-9+_.-]+@(.+)$", "Please enter a valid email address.");
+                    newValue = CLIUtils.promptString(sc, "Enter new Email Address: ", true, 5, 50, "^[A-Za-z0-9+_.-]+@(.+)$", "Please enter a valid email address.");
                     break;
                 case 3:
-                    newValue = CLIUtils.promptString(sc, "Enter new City", true, 2, 30, null, null);
+                    newValue = CLIUtils.promptString(sc, "Enter new City: ", true, 2, 30, null, null);
                     break;
             }
 
@@ -114,7 +113,7 @@ public class Citizen extends User {
     }
 
     private void handleSuggestionSubmission(Scanner sc) {
-        String suggestion = CLIUtils.promptString(sc, "Suggestion", true, 10, 200, null, null);
+        String suggestion = CLIUtils.promptString(sc, "Suggestion: ", true, 10, 200, null, null);
         try {
             Connection con = DBConnection.connect();
             String sql = "INSERT INTO suggestions (user_id, suggestion) VALUES (?, ?)";
@@ -141,6 +140,8 @@ public class Citizen extends User {
         int complaintType = CLIUtils.promptInt(sc, "Enter type (1-2): ", 1, 2);
         String type = (complaintType == 1) ? "Civil" : "Criminal";
         try {
+            // Note: For a full fix, the fileComplaint method should also accept 'sc'
+            // But for now, it creates its own internal scanner.
             ComplaintManager.fileComplaint(userId, type);
             int latestComplaintId = ComplaintManager.getLatestComplaintId(userId);
             if (latestComplaintId > 0) {
@@ -155,7 +156,7 @@ public class Citizen extends User {
     }
 
     private void handleOfficerLookup(Scanner sc) {
-        String area = CLIUtils.promptString(sc, "Enter area/city to view officer details", true, 2, 40, null, null);
+        String area = CLIUtils.promptString(sc, "Enter area/city to view officer details: ", true, 2, 40, null, null);
         OfficerManager.viewOfficersByArea(area);
     }
 
@@ -190,7 +191,7 @@ public class Citizen extends User {
     }
 
     private void handleFeedbackSubmission(Scanner sc) {
-        String feedback = CLIUtils.promptString(sc, "Feedback", true, 10, 200, null, null);
+        String feedback = CLIUtils.promptString(sc, "Feedback: ", true, 10, 200, null, null);
         CLIUtils.printSuccess("Thank you for your feedback!");
         ActionTracker.log("Citizen_" + userId, "Submitted feedback");
     }
