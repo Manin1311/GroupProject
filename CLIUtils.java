@@ -31,13 +31,17 @@ public class CLIUtils {
             }
             System.out.println();
         } catch (Exception e) {
+            // Fallback to simple heading if ASCII art fails
             try {
                 System.out.println("RAPIDRESOLVE - Complaint & Crime Management System");
                 System.out.println();
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even fallback fails, do nothing
+            }
         }
     }
 
+    // Center a string in a given width
     public static String center(String s, int width) {
         try {
             if (s == null) {
@@ -52,19 +56,24 @@ public class CLIUtils {
         }
     }
 
+    // Clear the screen (works on most ANSI terminals)
     public static void clearScreen() {
         try {
             System.out.print("\033[H\033[2J");
             System.out.flush();
         } catch (Exception e) {
+            // If clear screen fails, just print some newlines
             try {
                 for (int i = 0; i < 50; i++) {
                     System.out.println();
                 }
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even newlines fail, do nothing
+            }
         }
     }
 
+    // Show a loading animation (animated dots)
     public static void showLoadingAnimation(String message, int dotCount, int delayMs) {
         try {
             if (message == null) message = "Loading";
@@ -83,10 +92,13 @@ public class CLIUtils {
         } catch (Exception e) {
             try {
                 System.out.println("Loading...");
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even fallback fails, do nothing
+            }
         }
     }
 
+    // Typewriter effect for text
     public static void typewriterPrint(String text, int delayMs) {
         try {
             if (text == null) text = "";
@@ -103,10 +115,13 @@ public class CLIUtils {
         } catch (Exception e) {
             try {
                 System.out.println(text != null ? text : "");
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even fallback fails, do nothing
+            }
         }
     }
 
+    // Print a random tip of the day
     public static void printTipOfTheDay() {
         try {
             String[] tips = {
@@ -126,96 +141,83 @@ public class CLIUtils {
         } catch (Exception e) {
             try {
                 System.out.println("\n💡 Tip: Keep your account secure!");
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even fallback fails, do nothing
+            }
         }
     }
 
+    // Improved boxed menu with double-line borders and arrow options, with tip of the day
     public static void printBoxedMenu(String title, String[] options) {
-        try {
-            // REMOVED the call to the loading animation to speed up the menu.
-            // showLoadingAnimation("Loading menu", 4, 180);
-
-            if (title == null) title = "Menu";
-            if (options == null || options.length == 0) {
-                options = new String[]{"No options available"};
-            }
-
-            int width = title.length();
-            for (String opt : options) {
-                if (opt != null && opt.length() > width) width = opt.length();
-            }
-            width += 14;
-            if (width < 20) width = 20;
-
-            String border = CYAN + "╔" + "═".repeat(width) + "╗" + RESET;
-            String sep = CYAN + "╠" + "═".repeat(width) + "╣" + RESET;
-            System.out.println(border);
-            System.out.println(CYAN + "║      " + YELLOW + title + " ".repeat(width - title.length() - 6) + CYAN + "║" + RESET);
-            System.out.println(sep);
-            for (String opt : options) {
-                // REMOVED the delay for each menu item to make them appear instantly.
-                // try {
-                //     Thread.sleep(70);
-                // } catch (Exception ignored) {}
-                if (opt != null) {
-                    System.out.println(CYAN + "║   " + BLUE + "➤  " + opt + " ".repeat(width - opt.length() - 6) + CYAN + "║" + RESET);
-                }
-            }
-            System.out.println(border);
-            printTipOfTheDay();
-        } catch (Exception e) {
-            try {
-                System.out.println("=== " + (title != null ? title : "Menu") + " ===");
-                if (options != null) {
-                    for (String opt : options) {
-                        if (opt != null) {
-                            System.out.println("- " + opt);
-                        }
-                    }
-                }
-            } catch (Exception ex) {}
+        // Calculate the max width needed
+        int maxLen = title.length();
+        for (String opt : options) {
+            // Account for arrow and space ("→ ")
+            int optLen = 2 + 1 + opt.length();
+            if (optLen > maxLen) maxLen = optLen;
         }
+        int padding = 2; // spaces on each side
+        int width = maxLen + padding * 2;
+
+        // Top border
+        String borderTop = CYAN + "╔" + "═".repeat(width) + "╗" + RESET;
+        // Title separator
+        String sep = CYAN + "╠" + "═".repeat(width) + "╣" + RESET;
+        // Bottom border
+        String borderBottom = CYAN + "╚" + "═".repeat(width) + "╝" + RESET;
+
+        // Title line, centered
+        int titlePadLeft = (width - title.length()) / 2;
+        int titlePadRight = width - title.length() - titlePadLeft;
+        String titleLine = CYAN + "║" + " ".repeat(titlePadLeft) + YELLOW + title + RESET + " ".repeat(titlePadRight) + CYAN + "║" + RESET;
+
+        // Print box
+        System.out.println(borderTop);
+        System.out.println(titleLine);
+        System.out.println(sep);
+        for (String opt : options) {
+            String line = " ".repeat(padding) + BLUE + "→ " + opt + RESET;
+            int optPadRight = width - (line.replaceAll("\\u001B\\[[;\\d]*m", "").length());
+            System.out.println(CYAN + "║" + line + " ".repeat(optPadRight) + CYAN + "║" + RESET);
+        }
+        System.out.println(borderBottom);
+        printTipOfTheDay();
     }
 
+    // Print a boxed info section (for About, Help, etc.)
     public static void printBoxedInfo(String title, String[] lines) {
-        try {
-            if (title == null) title = "Information";
-            if (lines == null || lines.length == 0) {
-                lines = new String[]{"No information available"};
-            }
-
-            int width = title.length();
-            for (String l : lines) {
-                if (l != null && l.length() > width) width = l.length();
-            }
-            width += 6;
-            if (width < 20) width = 20;
-
-            String border = CYAN + "╔" + "═".repeat(width) + "╗" + RESET;
-            String sep = CYAN + "╠" + "═".repeat(width) + "╣" + RESET;
-            System.out.println(border);
-            System.out.println(CYAN + "║  " + YELLOW + title + " ".repeat(width - title.length() - 2) + CYAN + "║" + RESET);
-            System.out.println(sep);
-            for (String l : lines) {
-                if (l != null) {
-                    System.out.println(CYAN + "║  " + WHITE + l + " ".repeat(width - l.length() - 2) + CYAN + "║" + RESET);
-                }
-            }
-            System.out.println(border);
-        } catch (Exception e) {
-            try {
-                System.out.println("=== " + (title != null ? title : "Information") + " ===");
-                if (lines != null) {
-                    for (String l : lines) {
-                        if (l != null) {
-                            System.out.println(l);
-                        }
-                    }
-                }
-            } catch (Exception ex) {}
+        if (title == null) title = "Information";
+        if (lines == null || lines.length == 0) {
+            lines = new String[]{"No information available"};
         }
+
+        int maxLen = title.length();
+        for (String l : lines) {
+            if (l != null && l.length() > maxLen) maxLen = l.length();
+        }
+        int padding = 2;
+        int width = maxLen + padding * 2;
+
+        String borderTop = CYAN + "╔" + "═".repeat(width) + "╗" + RESET;
+        String sep = CYAN + "╠" + "═".repeat(width) + "╣" + RESET;
+        String borderBottom = CYAN + "╚" + "═".repeat(width) + "╝" + RESET;
+
+        int titlePadLeft = (width - title.length()) / 2;
+        int titlePadRight = width - title.length() - titlePadLeft;
+        String titleLine = CYAN + "║" + " ".repeat(titlePadLeft) + YELLOW + title + RESET + " ".repeat(titlePadRight) + CYAN + "║" + RESET;
+
+        System.out.println(borderTop);
+        System.out.println(titleLine);
+        System.out.println(sep);
+        for (String l : lines) {
+            String line = " ".repeat(padding) + WHITE + l + RESET;
+            int linePadRight = width - (line.replaceAll("\\u001B\\[[;\\d]*m", "").length());
+            System.out.println(CYAN + "║" + line + " ".repeat(linePadRight) + CYAN + "║" + RESET);
+        }
+        System.out.println(borderBottom);
     }
 
+    // Pause and wait for user to press Enter
     public static void waitForEnter() {
         try {
             System.out.print(MAGENTA + "\nPress Enter to continue..." + RESET);
@@ -224,10 +226,13 @@ public class CLIUtils {
             try {
                 System.out.println("\nPress Enter to continue...");
                 System.in.read();
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even fallback fails, do nothing
+            }
         }
     }
 
+    // Print a colored prompt
     public static void printPrompt(String prompt) {
         try {
             if (prompt == null) prompt = "Enter: ";
@@ -235,10 +240,13 @@ public class CLIUtils {
         } catch (Exception e) {
             try {
                 System.out.print(prompt != null ? prompt : "Enter: ");
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even fallback fails, do nothing
+            }
         }
     }
 
+    // Print a colored error
     public static void printError(String error) {
         try {
             if (error == null) error = "An error occurred";
@@ -246,10 +254,13 @@ public class CLIUtils {
         } catch (Exception e) {
             try {
                 System.out.println("ERROR: " + (error != null ? error : "An error occurred"));
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even fallback fails, do nothing
+            }
         }
     }
 
+    // Print a colored info message
     public static void printInfo(String info) {
         try {
             if (info == null) info = "";
@@ -257,10 +268,13 @@ public class CLIUtils {
         } catch (Exception e) {
             try {
                 System.out.println(info != null ? info : "");
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even fallback fails, do nothing
+            }
         }
     }
 
+    // Print a colored warning
     public static void printWarning(String warning) {
         try {
             if (warning == null) warning = "Warning";
@@ -268,10 +282,13 @@ public class CLIUtils {
         } catch (Exception e) {
             try {
                 System.out.println("WARNING: " + (warning != null ? warning : "Warning"));
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even fallback fails, do nothing
+            }
         }
     }
 
+    // Print a colored success message
     public static void printSuccess(String msg) {
         try {
             if (msg == null) msg = "Success";
@@ -279,10 +296,13 @@ public class CLIUtils {
         } catch (Exception e) {
             try {
                 System.out.println("SUCCESS: " + (msg != null ? msg : "Success"));
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                // If even fallback fails, do nothing
+            }
         }
     }
 
+    // Robust input utility: get validated integer input with re-prompt
     public static int promptInt(Scanner sc, String prompt, int min, int max) {
         while (true) {
             try {
@@ -302,6 +322,7 @@ public class CLIUtils {
         }
     }
 
+    // Robust input utility: get validated string input with re-prompt
     public static String promptString(Scanner sc, String prompt, boolean required, int minLen, int maxLen, String regex, String errorMsg) {
         while (true) {
             try {
@@ -329,4 +350,4 @@ public class CLIUtils {
             }
         }
     }
-}
+} 
