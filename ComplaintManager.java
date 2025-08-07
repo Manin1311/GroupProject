@@ -3,39 +3,27 @@ import java.util.Scanner;
 
 public class ComplaintManager {
 
-    // ✅ 1. File a new complaint
+    // This is the first fileComplaint method, now updated with the counter logic.
     public static void fileComplaint(int userId) {
         Scanner sc = new Scanner(System.in);
 
         CLIUtils.printPrompt("Enter Area: ");
         String area = sc.nextLine().trim();
-        if (area.isEmpty()) {
-            CLIUtils.printError("Area cannot be empty. Please try again.");
-            return;
-        }
-        if (area.length() < 2) {
+        if (area.isEmpty() || area.length() < 2) {
             CLIUtils.printError("Area must be at least 2 characters long.");
             return;
         }
 
         CLIUtils.printPrompt("Enter Complaint Type: ");
         String type = sc.nextLine().trim();
-        if (type.isEmpty()) {
-            CLIUtils.printError("Complaint type cannot be empty. Please try again.");
-            return;
-        }
-        if (type.length() < 3) {
+        if (type.isEmpty() || type.length() < 3) {
             CLIUtils.printError("Complaint type must be at least 3 characters long.");
             return;
         }
 
         CLIUtils.printPrompt("Enter Description: ");
         String desc = sc.nextLine().trim();
-        if (desc.isEmpty()) {
-            CLIUtils.printError("Description cannot be empty. Please try again.");
-            return;
-        }
-        if (desc.length() < 10) {
+        if (desc.isEmpty() || desc.length() < 10) {
             CLIUtils.printError("Description must be at least 10 characters long.");
             return;
         }
@@ -51,7 +39,8 @@ public class ComplaintManager {
         }
 
         Connection con = null;
-        PreparedStatement ps = null;
+        PreparedStatement psInsert = null;
+        PreparedStatement psUpdate = null; // Statement for the update
 
         try {
             con = DBConnection.connect();
@@ -59,34 +48,51 @@ public class ComplaintManager {
                 CLIUtils.printError("Database connection failed.");
                 return;
             }
+            // Start transaction
+            con.setAutoCommit(false);
 
-            String sql = "INSERT INTO complaints (user_id, area, type, description, status, officer_id, filed_on) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            ps = con.prepareStatement(sql);
+            // 1. Insert the new complaint
+            String insertSql = "INSERT INTO complaints (user_id, area, type, description, status, officer_id, filed_on) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            psInsert = con.prepareStatement(insertSql);
+            psInsert.setInt(1, userId);
+            psInsert.setString(2, area);
+            psInsert.setString(3, type);
+            psInsert.setString(4, desc);
+            psInsert.setString(5, status);
+            psInsert.setInt(6, assignedOfficerId);
+            psInsert.setString(7, filedOn);
 
-            ps.setInt(1, userId);
-            ps.setString(2, area);
-            ps.setString(3, type);
-            ps.setString(4, desc);
-            ps.setString(5, status);
-            ps.setInt(6, assignedOfficerId);
-            ps.setString(7, filedOn);
-
-            int rows = ps.executeUpdate();
+            int rows = psInsert.executeUpdate();
             if (rows > 0) {
+                // 2. If insert is successful, update the officer's assigned_count
+                String updateSql = "UPDATE officers SET assigned_count = assigned_count + 1 WHERE officer_id = ?";
+                psUpdate = con.prepareStatement(updateSql);
+                psUpdate.setInt(1, assignedOfficerId);
+                psUpdate.executeUpdate();
+
+                // Commit both changes together
+                con.commit();
+
                 CLIUtils.printSuccess("Complaint filed successfully!");
                 CLIUtils.printInfo("Assigned Officer ID: " + assignedOfficerId);
                 ActionTracker.log("Citizen_" + userId, "Filed complaint in " + area + " assigned to Officer ID: " + assignedOfficerId);
             } else {
+                // If insert failed, roll back the transaction
+                con.rollback();
                 CLIUtils.printError("Failed to file complaint.");
             }
 
         } catch (SQLException e) {
             CLIUtils.printError("Database error: " + e.getMessage());
-        } catch (Exception e) {
-            CLIUtils.printError("Error: " + e.getMessage());
+            try {
+                if(con != null) con.rollback(); // Rollback on error
+            } catch (SQLException ex) {
+                CLIUtils.printError("Error rolling back transaction: " + ex.getMessage());
+            }
         } finally {
             try {
-                if (ps != null) ps.close();
+                if (psInsert != null) psInsert.close();
+                if (psUpdate != null) psUpdate.close();
                 if (con != null) con.close();
             } catch (SQLException e) {
                 CLIUtils.printError("Error closing database resources: " + e.getMessage());
@@ -94,35 +100,26 @@ public class ComplaintManager {
         }
     }
 
-    // Overloaded fileComplaint for type
+    // This is the second fileComplaint method, also updated.
     public static void fileComplaint(int userId, String type) {
         Scanner sc = new Scanner(System.in);
 
         CLIUtils.printPrompt("Enter Area: ");
         String area = sc.nextLine().trim();
-        if (area.isEmpty()) {
-            CLIUtils.printError("Area cannot be empty. Please try again.");
-            return;
-        }
-        if (area.length() < 2) {
+        if (area.isEmpty() || area.length() < 2) {
             CLIUtils.printError("Area must be at least 2 characters long.");
             return;
         }
 
         CLIUtils.printPrompt("Enter Description: ");
         String desc = sc.nextLine().trim();
-        if (desc.isEmpty()) {
-            CLIUtils.printError("Description cannot be empty. Please try again.");
-            return;
-        }
-        if (desc.length() < 10) {
+        if (desc.isEmpty() || desc.length() < 10) {
             CLIUtils.printError("Description must be at least 10 characters long.");
             return;
         }
 
         String status = "OPEN";
         String filedOn = java.time.LocalDate.now().toString();
-
         int assignedOfficerId = OfficerManager.assignOfficer(area);
 
         if (assignedOfficerId == -1) {
@@ -131,7 +128,8 @@ public class ComplaintManager {
         }
 
         Connection con = null;
-        PreparedStatement ps = null;
+        PreparedStatement psInsert = null;
+        PreparedStatement psUpdate = null; // Statement for the update
 
         try {
             con = DBConnection.connect();
@@ -139,40 +137,59 @@ public class ComplaintManager {
                 CLIUtils.printError("Database connection failed.");
                 return;
             }
+            // Start transaction
+            con.setAutoCommit(false);
 
-            String sql = "INSERT INTO complaints (user_id, area, type, description, status, officer_id, filed_on) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            ps = con.prepareStatement(sql);
+            // 1. Insert the new complaint
+            String insertSql = "INSERT INTO complaints (user_id, area, type, description, status, officer_id, filed_on) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            psInsert = con.prepareStatement(insertSql);
+            psInsert.setInt(1, userId);
+            psInsert.setString(2, area);
+            psInsert.setString(3, type);
+            psInsert.setString(4, desc);
+            psInsert.setString(5, status);
+            psInsert.setInt(6, assignedOfficerId);
+            psInsert.setString(7, filedOn);
 
-            ps.setInt(1, userId);
-            ps.setString(2, area);
-            ps.setString(3, type);
-            ps.setString(4, desc);
-            ps.setString(5, status);
-            ps.setInt(6, assignedOfficerId);
-            ps.setString(7, filedOn);
-
-            int rows = ps.executeUpdate();
+            int rows = psInsert.executeUpdate();
             if (rows > 0) {
+                // 2. If insert is successful, update the officer's assigned_count
+                String updateSql = "UPDATE officers SET assigned_count = assigned_count + 1 WHERE officer_id = ?";
+                psUpdate = con.prepareStatement(updateSql);
+                psUpdate.setInt(1, assignedOfficerId);
+                psUpdate.executeUpdate();
+
+                // Commit both changes together
+                con.commit();
+
                 CLIUtils.printSuccess("Complaint filed successfully!");
                 CLIUtils.printInfo("Assigned Officer ID: " + assignedOfficerId);
                 ActionTracker.log("Citizen_" + userId, "Filed " + type + " complaint in " + area + " assigned to Officer ID: " + assignedOfficerId);
             } else {
+                // If insert failed, roll back the transaction
+                con.rollback();
                 CLIUtils.printError("Failed to file complaint.");
             }
 
         } catch (SQLException e) {
             CLIUtils.printError("Database error: " + e.getMessage());
-        } catch (Exception e) {
-            CLIUtils.printError("Error: " + e.getMessage());
+            try {
+                if(con != null) con.rollback(); // Rollback on error
+            } catch (SQLException ex) {
+                CLIUtils.printError("Error rolling back transaction: " + ex.getMessage());
+            }
         } finally {
             try {
-                if (ps != null) ps.close();
+                if (psInsert != null) psInsert.close();
+                if (psUpdate != null) psUpdate.close();
                 if (con != null) con.close();
             } catch (SQLException e) {
                 CLIUtils.printError("Error closing database resources: " + e.getMessage());
             }
         }
     }
+
+    // ... The rest of your ComplaintManager.java methods remain the same ...
 
     // ✅ 2. Citizen: View complaints filed by them
     public static void viewComplaintsByUser(int userId) {
@@ -187,7 +204,7 @@ public class ComplaintManager {
                 CLIUtils.printError("Database connection failed.");
                 return;
             }
-            
+
             String sql = "SELECT * FROM complaints WHERE user_id = ?";
             ps = con.prepareStatement(sql);
             ps.setInt(1, userId);
@@ -230,14 +247,14 @@ public class ComplaintManager {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             con = DBConnection.connect();
             if (con == null) {
                 CLIUtils.printError("Database connection failed.");
                 return;
             }
-            
+
             String sql = "SELECT * FROM complaints WHERE officer_id = ?";
             ps = con.prepareStatement(sql);
             ps.setInt(1, officerId);
@@ -255,7 +272,7 @@ public class ComplaintManager {
             }
 
             ActionTracker.log("Officer_" + officerId, "Viewed assigned complaints");
-            
+
         } catch (SQLException e) {
             CLIUtils.printError("Database error fetching officer complaints: " + e.getMessage());
         } catch (Exception e) {
@@ -280,12 +297,12 @@ public class ComplaintManager {
         try {
             CLIUtils.printPrompt("Enter Complaint ID to update: ");
             String complaintIdInput = sc.nextLine().trim();
-            
+
             if (complaintIdInput.isEmpty()) {
                 CLIUtils.printError("Complaint ID cannot be empty.");
                 return;
             }
-            
+
             int cid;
             try {
                 cid = Integer.parseInt(complaintIdInput);
@@ -300,13 +317,12 @@ public class ComplaintManager {
 
             CLIUtils.printPrompt("Enter new status (OPEN/IN_PROGRESS/RESOLVED/CLOSED): ");
             String newStatus = sc.nextLine().trim().toUpperCase();
-            
+
             if (newStatus.isEmpty()) {
                 CLIUtils.printError("Status cannot be empty.");
                 return;
             }
-            
-            // Validate status
+
             if (!newStatus.matches("^(OPEN|IN_PROGRESS|RESOLVED|CLOSED|CONDITIONAL_CLOSED)$")) {
                 CLIUtils.printError("Invalid status. Please use: OPEN, IN_PROGRESS, RESOLVED, CLOSED, or CONDITIONAL_CLOSED");
                 return;
@@ -317,7 +333,7 @@ public class ComplaintManager {
                 CLIUtils.printError("Database connection failed.");
                 return;
             }
-            
+
             String sql = "UPDATE complaints SET status = ? WHERE complaint_id = ? AND officer_id = ?";
             ps = con.prepareStatement(sql);
 
@@ -352,14 +368,14 @@ public class ComplaintManager {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             con = DBConnection.connect();
             if (con == null) {
                 CLIUtils.printError("Database connection failed.");
                 return;
             }
-            
+
             String sql = "SELECT * FROM complaints";
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
@@ -377,7 +393,7 @@ public class ComplaintManager {
             }
 
             ActionTracker.log("Admin", "Viewed all complaints in the system");
-            
+
         } catch (SQLException e) {
             CLIUtils.printError("Database error fetching all complaints: " + e.getMessage());
         } catch (Exception e) {
@@ -393,19 +409,18 @@ public class ComplaintManager {
         }
     }
 
-    // Show complaint tracker for a user
     public static void showComplaintTracker(int userId) {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             con = DBConnection.connect();
             if (con == null) {
                 CLIUtils.printError("Database connection failed.");
                 return;
             }
-            
+
             String sql = "SELECT complaint_id, status FROM complaints WHERE user_id = ?";
             ps = con.prepareStatement(sql);
             ps.setInt(1, userId);
@@ -432,7 +447,7 @@ public class ComplaintManager {
                         CLIUtils.printInfo(status);
                 }
             }
-            
+
         } catch (SQLException e) {
             CLIUtils.printError("Database error fetching complaint tracker: " + e.getMessage());
         } catch (Exception e) {
@@ -453,14 +468,14 @@ public class ComplaintManager {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             con = DBConnection.connect();
             if (con == null) {
                 CLIUtils.printError("Database connection failed.");
                 return -1;
             }
-            
+
             String sql = "SELECT complaint_id FROM complaints WHERE user_id = ? ORDER BY complaint_id DESC LIMIT 1";
             ps = con.prepareStatement(sql);
             ps.setInt(1, userId);
@@ -491,19 +506,19 @@ public class ComplaintManager {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             con = DBConnection.connect();
             if (con == null) {
                 CLIUtils.printError("Database connection failed.");
                 return 0;
             }
-            
+
             String sql = "SELECT COUNT(*) FROM complaints";
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
             if (rs.next()) count = rs.getInt(1);
-            
+
         } catch (SQLException e) {
             CLIUtils.printError("Database error counting complaints: " + e.getMessage());
         } catch (Exception e) {
