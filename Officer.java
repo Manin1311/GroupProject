@@ -2,14 +2,13 @@ import java.util.Scanner;
 
 public class Officer extends User {
 
-    // Updated constructor to remove 'name'
     public Officer(int userId, String username, String password, int assignedCount, String area) {
         super(userId, username, password, assignedCount, area);
     }
 
-    @Override
-    public void showMenu() {
-        Scanner sc = new Scanner(System.in);
+    // MODIFIED: Method now accepts a Scanner object
+    public void showMenu(Scanner sc) {
+        // REMOVED: The line "Scanner sc = new Scanner(System.in);" is deleted from here.
         int choice = -1;
 
         do {
@@ -34,10 +33,12 @@ public class Officer extends User {
                     break;
                 case 2:
                     CLIUtils.printInfo("Updating complaint status...");
+                    // Note: For a full fix, updateComplaintStatus should also accept 'sc'
                     ComplaintManager.updateComplaintStatus(userId);
                     break;
                 case 3:
                     CLIUtils.printInfo("Filing new crime record...");
+                    // Note: For a full fix, fileCrime should also accept 'sc'
                     CrimeManager.fileCrime(userId);
                     break;
                 case 4:
@@ -68,7 +69,7 @@ public class Officer extends User {
         CLIUtils.printInfo("Viewing your profile...");
         String[] profileDetails = {
                 "Officer ID: " + this.userId,
-                "Username: " + this.username, // Changed from "Name" to "Username"
+                "Username: " + this.username,
                 "Assigned Complaints: " + this.assignedCount,
                 "Assigned Area: " + this.area
         };
@@ -79,7 +80,7 @@ public class Officer extends User {
     private void generateReport() {
         CLIUtils.printInfo("Generating officer report...");
         try {
-            ReportGenerator.generateOfficerComplaintsReport(this.userId, this.username); // Pass username instead of name
+            ReportGenerator.generateOfficerComplaintsReport(this.userId, this.username);
             ActionTracker.log("Officer_" + userId, "Generated personal complaints report");
         } catch (Exception e) {
             CLIUtils.printError("Error generating report: " + e.getMessage());
