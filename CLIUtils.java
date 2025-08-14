@@ -22,7 +22,7 @@ public class CLIUtils {
                     CYAN + "██║  ██║██║  ██║██║     ██║██████╔╝    ██║  ██║███████╗███████║╚██████╔╝███████╗╚████╔╝ ███████╗    " + RESET,
                     CYAN + "╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═════╝     ╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝ ╚═══╝  ╚══════╝    " + RESET,
                     CYAN + "                                                                                                    " + RESET,
-                    CYAN + "                    " + BLUE + "R  A  P  I  D  R  E  S  O  L  V  E" + RESET + CYAN + "                    " + RESET
+                    CYAN + "                    " + BLUE + "SMART COMPLAINT AND CRIME MANAGEMENT" + RESET + CYAN + "                    " + RESET
             };
             for (String line : art) {
                 if (line != null) {
@@ -350,4 +350,4 @@ public class CLIUtils {
             }
         }
     }
-} 
+}
