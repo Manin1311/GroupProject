@@ -11,7 +11,7 @@ public class Admin extends User {
         int choice = -1;
 
         do {
-            // MODIFIED: "Export Data" removed, other options re-numbered.
+
             String[] options = {
                     "1. View All Complaints",
                     "2. View All Crime Reports",
@@ -22,7 +22,7 @@ public class Admin extends User {
                     "7. FAQs",
                     "8. Logout"
             };
-            // MODIFIED: The choice range is now 1-8.
+
             CLIUtils.printBoxedMenu("Admin Menu", options);
             choice = CLIUtils.promptInt(sc, "Enter your choice: ", 1, 8);
 
@@ -31,27 +31,39 @@ public class Admin extends User {
                 case 1:
                     CLIUtils.printInfo("Showing all complaints...");
                     ComplaintManager.viewAllComplaints();
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
                     break;
                 case 2:
                     CLIUtils.printInfo("Showing all crime reports...");
                     CrimeManager.viewAllCrimes();
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
                     break;
                 case 3:
                     handleReportGeneration();
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
                     break;
                 case 4:
                     CLIUtils.printInfo("Viewing system logs...");
                     ActionTracker.viewLog();
                     ActionTracker.log("Admin", "Viewed logs");
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
                     break;
                 case 5:
                     manageUsers(sc);
                     break;
-                case 6: // Was previously case 7
+                case 6:
                     systemSettings(sc);
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
                     break;
-                case 7: // Was previously case 8
+                case 7:
                     showFAQs();
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
                     break;
                 case 8: // Was previously case 9
                     CLIUtils.printInfo("Logged out successfully.");
