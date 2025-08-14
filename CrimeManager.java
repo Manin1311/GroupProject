@@ -71,14 +71,14 @@ public class CrimeManager {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             con = DBConnection.connect();
             if (con == null) {
                 CLIUtils.printError("Database connection failed.");
                 return;
             }
-            
+
             String sql = "SELECT * FROM crime_records WHERE officer_id = ?";
             ps = con.prepareStatement(sql);
             ps.setInt(1, officerId);
@@ -95,7 +95,7 @@ public class CrimeManager {
             }
 
             ActionTracker.log("Officer_" + officerId, "Viewed all crimes filed by self");
-            
+
         } catch (SQLException e) {
             CLIUtils.printError("Database error viewing crimes: " + e.getMessage());
         } catch (Exception e) {
@@ -116,14 +116,14 @@ public class CrimeManager {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             con = DBConnection.connect();
             if (con == null) {
                 CLIUtils.printError("Database connection failed.");
                 return;
             }
-            
+
             String sql = "SELECT * FROM crime_records";
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
@@ -140,7 +140,7 @@ public class CrimeManager {
             }
 
             ActionTracker.log("Admin", "Viewed all crime records");
-            
+
         } catch (SQLException e) {
             CLIUtils.printError("Database error viewing all crimes: " + e.getMessage());
         } catch (Exception e) {
@@ -170,18 +170,18 @@ public class CrimeManager {
             sql += " WHERE date_reported >= DATE_SUB(CURDATE(), INTERVAL 15 DAY)";
             label = "Incident History (Last 15 Days)";
         }
-        
+
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             con = DBConnection.connect();
             if (con == null) {
                 CLIUtils.printError("Database connection failed.");
                 return;
             }
-            
+
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
 
@@ -195,7 +195,7 @@ public class CrimeManager {
                 CLIUtils.printInfo("Date Reported: " + rs.getString("date_reported"));
                 CLIUtils.printInfo("-----------------------------");
             }
-            
+
         } catch (SQLException e) {
             CLIUtils.printError("Database error fetching snapshot: " + e.getMessage());
         } catch (Exception e) {
@@ -216,19 +216,19 @@ public class CrimeManager {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             con = DBConnection.connect();
             if (con == null) {
                 CLIUtils.printError("Database connection failed.");
                 return 0;
             }
-            
+
             String sql = "SELECT COUNT(*) FROM crime_records";
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
             if (rs.next()) count = rs.getInt(1);
-            
+
         } catch (SQLException e) {
             CLIUtils.printError("Database error counting crimes: " + e.getMessage());
         } catch (Exception e) {
