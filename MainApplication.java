@@ -1,3 +1,6 @@
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Scanner;
 
 public class MainApplication {
@@ -18,11 +21,13 @@ public class MainApplication {
                             "5. View System Statistics",
                             "6. About RapidResolve",
                             "7. Help / Instructions",
-                            "8. Exit"
+                            "8. Exit",
+                            "9.ChatBox Command Mode"
                     };
                     CLIUtils.printBoxedMenu("Main Menu", options);
 
-                    int choice = CLIUtils.promptInt(sc, "Enter choice: ", 1, 8);
+                    int choice = CLIUtils.promptInt(sc, "Enter choice: ", 1, 9);
+
 
                     switch (choice) {
                         case 1:
@@ -54,6 +59,8 @@ public class MainApplication {
                             CLIUtils.printError("Invalid choice. Please select 1-8.");
                     }
                     if (running) CLIUtils.waitForEnter();
+
+
                 } catch (Exception e) {
                     CLIUtils.printError("An unexpected error occurred: " + e.getMessage());
                     CLIUtils.printInfo("Please try again.");
@@ -83,7 +90,6 @@ public class MainApplication {
             String countryCode = CLIUtils.promptString(sc, "Country Code (+91, etc): ", true, 2, 5, "^\\+\\d+$", "Country code must start with + and be numeric (e.g., +91). ");
             String phone = CLIUtils.promptString(sc, "Phone Number (10 digits): ", true, 10, 10, "^\\d{10}$", "Phone number must be exactly 10 digits.");
 
-            // OTP Verification
             int otp = 1000 + new java.util.Random().nextInt(9000);
             CLIUtils.printInfo("Your OTP is: " + otp);
             int enteredOtp = CLIUtils.promptInt(sc, "Enter OTP: ", 1000, 9999);
@@ -206,3 +212,8 @@ public class MainApplication {
         }
     }
 }
+
+
+
+
+
