@@ -6,9 +6,9 @@ public class Officer extends User {
         super(userId, username, password, assignedCount, area);
     }
 
-    // MODIFIED: Method now accepts a Scanner object
+    
     public void showMenu(Scanner sc) {
-        // REMOVED: The line "Scanner sc = new Scanner(System.in);" is deleted from here.
+        
         int choice = -1;
 
         do {
@@ -30,20 +30,26 @@ public class Officer extends User {
                 case 1:
                     CLIUtils.printInfo("Viewing assigned complaints...");
                     ComplaintManager.viewComplaintsByOfficer(userId);
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
                     break;
                 case 2:
                     CLIUtils.printInfo("Updating complaint status...");
-                    // Note: For a full fix, updateComplaintStatus should also accept 'sc'
                     ComplaintManager.updateComplaintStatus(userId);
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
                     break;
                 case 3:
                     CLIUtils.printInfo("Filing new crime record...");
-                    // Note: For a full fix, fileCrime should also accept 'sc'
                     CrimeManager.fileCrime(userId);
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
                     break;
                 case 4:
                     CLIUtils.printInfo("Viewing crime records...");
                     CrimeManager.viewCrimesByOfficer(userId);
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
                     break;
                 case 5:
                     viewProfile();
