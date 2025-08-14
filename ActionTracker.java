@@ -1,87 +1,117 @@
-import java.io.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.SQLException;
 
 public class ActionTracker {
 
+
     public static void log(String user, String action) {
-        FileWriter writer = null;
+        // SQL query to insert a new log entry. The timestamp is set automatically by the database.
+        String sql = "INSERT INTO actions_log (username, action) VALUES (?, ?)";
+        Connection con = null;
+        PreparedStatement ps = null;
+
         try {
-            if (user == null || user.trim().isEmpty()) {
-                user = "Unknown";
-            }
-            if (action == null || action.trim().isEmpty()) {
-                action = "No action specified";
-            }
-            
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            String logEntry = timestamp + " | " + user + " | " + action + "\n";
-            
-            writer = new FileWriter("action_log.txt", true); // true for append mode
-            writer.write(logEntry);
-            
-        } catch (IOException e) {
+            con = DBConnection.connect();
+            if (con == null) return; // Silently fail if DB connection fails
+
+            ps = con.prepareStatement(sql);
+            ps.setString(1, user);
+            ps.setString(2, action);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
             // Silently fail for logging - don't crash the main application
-            System.err.println("Logging error: " + e.getMessage());
-        } catch (Exception e) {
-            // Silently fail for logging - don't crash the main application
-            System.err.println("Unexpected logging error: " + e.getMessage());
+            System.err.println("Database logging error: " + e.getMessage());
         } finally {
             try {
-                if (writer != null) writer.close();
-            } catch (IOException e) {
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
                 // Ignore close errors for logging
             }
         }
     }
 
+    /**
+     * Retrieves and displays all log entries from the 'actions_log' database table.
+     */
     public static void viewLog() {
-        BufferedReader reader = null;
+        String sql = "SELECT * FROM actions_log ORDER BY timestamp DESC";
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
         try {
-            File logFile = new File("action_log.txt");
-            if (!logFile.exists()) {
-                CLIUtils.printInfo("No action log found.");
+            con = DBConnection.connect();
+            if (con == null) {
+                CLIUtils.printError("Database connection failed.");
                 return;
             }
-            
-            reader = new BufferedReader(new FileReader(logFile));
-            String line;
-            
-            CLIUtils.printInfo("\n📋 Action Log:");
+
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(sql);
+
+            CLIUtils.printInfo("\n📋 Action Log (from Database):");
             CLIUtils.printInfo("=".repeat(80));
-            
-            while ((line = reader.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
-                CLIUtils.printInfo(line);
+
+            boolean foundLogs = false;
+            while (rs.next()) {
+                foundLogs = true;
+                String timestamp = rs.getTimestamp("timestamp").toString();
+                String username = rs.getString("username");
+                String action = rs.getString("action");
+                String logEntry = String.format("%s | %-15s | %s", timestamp, username, action);
+                CLIUtils.printInfo(logEntry);
             }
-            
-        } catch (IOException e) {
-            CLIUtils.printError("Error reading action log: " + e.getMessage());
-        } catch (Exception e) {
-            CLIUtils.printError("Unexpected error reading log: " + e.getMessage());
+
+            if (!foundLogs) {
+                CLIUtils.printInfo("No action log found in the database.");
+            }
+
+        } catch (SQLException e) {
+            CLIUtils.printError("Error reading action log from database: " + e.getMessage());
         } finally {
             try {
-                if (reader != null) reader.close();
-            } catch (IOException e) {
-                CLIUtils.printError("Error closing log file: " + e.getMessage());
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                CLIUtils.printError("Error closing database resources: " + e.getMessage());
             }
         }
     }
 
+    /**
+     * Deletes all records from the 'actions_log' database table.
+     */
     public static void clearLog() {
+        // TRUNCATE is faster than DELETE for clearing all rows in a table.
+        String sql = "TRUNCATE TABLE actions_log";
+        Connection con = null;
+        Statement stmt = null;
+
         try {
-            File logFile = new File("action_log.txt");
-            if (logFile.exists()) {
-                if (logFile.delete()) {
-                    CLIUtils.printSuccess("✅ Action log cleared successfully.");
-                } else {
-                    CLIUtils.printError("Failed to clear action log.");
-                }
-            } else {
-                CLIUtils.printInfo("No action log found to clear.");
+            con = DBConnection.connect();
+            if (con == null) {
+                CLIUtils.printError("Database connection failed.");
+                return;
             }
-        } catch (Exception e) {
-            CLIUtils.printError("Error clearing action log: " + e.getMessage());
+            stmt = con.createStatement();
+            stmt.execute(sql);
+            CLIUtils.printSuccess("✅ Database action log cleared successfully.");
+
+        } catch (SQLException e) {
+            CLIUtils.printError("Error clearing action log from database: " + e.getMessage());
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                CLIUtils.printError("Error closing database resources: " + e.getMessage());
+            }
         }
     }
 }
