@@ -49,6 +49,9 @@ public class Citizen extends User {
                     break;
                 case 5:
                     handleOfficerLookup(sc);
+                    CLIUtils.printInfo("Press Enter to continue...");
+                    sc.nextLine();
+
                     break;
                 case 6:
                     CLIUtils.printInfo("Ahmedabad Helpline: 155303");
